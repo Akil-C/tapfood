@@ -1,0 +1,40 @@
+# Keep the build context small. The Dockerfile only copies pom.xml and src/,
+# but everything listed here would otherwise be uploaded to the builder first.
+
+# Build output - regenerated inside the image
+target/
+build/
+
+# Version control
+.git/
+.gitattributes
+.gitignore
+
+# Eclipse / VS Code - contain absolute local paths
+.settings/
+.classpath
+.project
+.vscode/
+
+# Maven wrapper - the build stage uses the maven image's own mvn
+.mvn/
+mvnw
+mvnw.cmd
+
+# Docs and SQL - not needed at runtime
+*.md
+database/
+docs/
+
+# Local database dumps and env files - must never reach the image
+*_actual.sql
+*.dump
+.env
+.env.*
+
+# Misc
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

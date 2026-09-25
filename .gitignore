@@ -1,0 +1,45 @@
+# Java compiled files
+*.class
+
+# Build output
+build/
+target/
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Temporary files
+*.tmp
+*.temp
+# Local database dumps
+# schema_actual.sql was generated with `mysqldump --no-data` to verify
+# database/schema.sql against the live database. Dumps are machine-local and may
+# contain data, so they are never committed.
+*_actual.sql
+*.dump
+
+# Certificates and keys
+# isrgrootx1.pem is the public TiDB Cloud CA, used only by the local mysql CLI;
+# the deployed app validates TLS with the JVM's own trust store. The rule is
+# broad on purpose: .pem is also the usual extension for private keys.
+*.pem
+*.key
+*.p12
+*.jks
