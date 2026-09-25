@@ -1,268 +1,496 @@
-# TapFood
+# 🍔 TapFood — Food Ordering Web Application
 
-A food ordering web application built as a Java Dynamic Web Project. Users can
-browse restaurants, explore their menus, build a cart, check out and track their
-past orders. Authentication uses BCrypt-hashed passwords, and all data is
-persisted in MySQL through a DAO layer written with plain JDBC.
+TapFood is a **Java-based food ordering web application** that allows users to browse restaurants, explore menus, manage a shopping cart, place orders, save delivery addresses, and view their order history.
 
----
-
-## Features
-
-Every feature listed here is implemented in this repository.
-
-**Accounts**
-- User registration with client-side and server-side validation
-- Login by either username or email
-- Passwords hashed with BCrypt — plaintext passwords are never stored
-- Forgot password / reset password flow
-- Session-based login state, with logout
-
-**Ordering**
-- Restaurant listing with cuisine type, rating and delivery time
-- Per-restaurant menu pages
-- Add items to a session cart
-- Update item quantities and remove items from the cart
-- Checkout with delivery address and payment mode selection
-- Order placement, writing an order plus its line items
-- Order confirmation page
-- Order history for the logged-in user
-
-**Profile**
-- User profile page
-- Address book: add, edit and delete multiple saved delivery addresses
+The application follows a layered architecture using **Jakarta Servlets, JSP, JDBC, DAO, and MySQL**, with BCrypt-based password hashing for authentication.
 
 ---
 
-## Tech Stack
+## 🚀 Features
 
-| Layer | Technology |
-|---|---|
-| Language | Java 21 |
-| Web API | Jakarta Servlet 6.0 |
-| Views | JSP with shared `.jspf` fragments |
-| Server | Apache Tomcat 10.1.x |
-| Database | MySQL |
-| DB access | JDBC via MySQL Connector/J 9.2.0 |
-| Password hashing | jBCrypt 0.4 |
-| Build | Maven (WAR packaging), Maven Wrapper included |
-| Frontend | HTML, CSS, vanilla JavaScript |
+### 👤 User Authentication
 
-> **Note on Jakarta vs javax:** Tomcat 10 and later use the `jakarta.*`
-> namespace rather than `javax.*`. This project targets Jakarta Servlet 6.0, so
-> it requires **Tomcat 10.1.x or newer** and will not run on Tomcat 9.
+* User registration with client-side and server-side validation
+* Login using username or email
+* BCrypt password hashing
+* Forgot password and password reset functionality
+* Session-based authentication
+* Secure logout
+
+### 🍕 Restaurant & Menu
+
+* Browse available restaurants
+* View restaurant cuisine, rating, and delivery information
+* View restaurant-specific menus
+* Display food images and menu details
+
+### 🛒 Shopping Cart
+
+* Add food items to cart
+* Update item quantities
+* Remove individual items
+* Session-based cart management
+* Automatic cart total calculation
+
+### 💳 Checkout & Orders
+
+* Select delivery address
+* Select payment mode
+* Place food orders
+* Generate order confirmation
+* View previous orders and order details
+
+### 👤 Profile & Address Management
+
+* View user profile
+* Add delivery addresses
+* Edit saved addresses
+* Delete saved addresses
+* Manage multiple delivery addresses
 
 ---
 
-## Project Structure
+## 🛠️ Tech Stack
 
+| Layer                | Technology            |
+| -------------------- | --------------------- |
+| Programming Language | Java 21               |
+| Web Technology       | Jakarta Servlet 6.0   |
+| View Layer           | JSP                   |
+| Application Server   | Apache Tomcat 10.1.x  |
+| Database             | MySQL                 |
+| Database Access      | JDBC                  |
+| JDBC Driver          | MySQL Connector/J     |
+| Authentication       | BCrypt                |
+| Build Tool           | Maven                 |
+| Frontend             | HTML, CSS, JavaScript |
+| Architecture         | Layered / MVC-style   |
+| Deployment           | Docker / Render       |
+
+---
+
+## 🏗️ Application Architecture
+
+The application follows a layered architecture where each layer has a specific responsibility.
+
+```text
+                    ┌───────────────────┐
+                    │      Browser      │
+                    │ HTML / CSS / JSP  │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │     Servlets      │
+                    │   Controller      │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │      DAO          │
+                    │   Interfaces      │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │     DAOImpl       │
+                    │      JDBC         │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │      MySQL        │
+                    │     Database      │
+                    └───────────────────┘
 ```
+
+### Request Flow
+
+```text
+JSP
+ ↓
+Servlet
+ ↓
+DAO Interface
+ ↓
+DAO Implementation
+ ↓
+JDBC
+ ↓
+MySQL
+ ↓
+Model Object
+ ↓
+Servlet
+ ↓
+JSP
+```
+
+This separation keeps the application organized and makes database operations independent from the controller layer.
+
+---
+
+## 📂 Project Structure
+
+```text
 tapfood/
-├── pom.xml                        Maven build, dependencies, WAR packaging
-├── mvnw, mvnw.cmd, .mvn/          Maven Wrapper — build without installing Maven
+│
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+├── .mvn/
+│
 ├── database/
-│   └── schema.sql                 MySQL table definitions
-├── .env.example                   Template for the required environment variables
-└── src/main/
-    ├── java/
-    │   ├── com/food/servlet/      Controllers — one servlet per responsibility
-    │   │   ├── RegisterServlet        /Registration
-    │   │   ├── LoginServlet           /Login
-    │   │   ├── ResetPasswordServlet   /ResetPassword
-    │   │   ├── RestaurantServlet      /restaurant
-    │   │   ├── MenuServlet            /menu
-    │   │   ├── CartServlet            /cart
-    │   │   ├── OrderServlet           /placeOrder
-    │   │   └── AddressServlet         /address
-    │   └── com/tap/
-    │       ├── model/             POJOs: User, Restaurant, Menu, Cart,
-    │       │                      CartItem, Order, OrderItem, UserAddress
-    │       ├── DAO/               Data-access interfaces
-    │       ├── DAOImpl/           JDBC implementations of those interfaces
-    │       └── utility/
-    │           └── DBConnection   Central connection factory, reads config
-    │                              from environment variables
-    └── webapp/
-        ├── *.jsp, register.html   Views
-        ├── css/style.css          Styling
-        ├── images/                Restaurant and food imagery
-        └── WEB-INF/
-            ├── web.xml            Deployment descriptor
-            └── jspf/              Shared header, footer and asset includes
+│   └── schema.sql
+│
+├── .env.example
+│
+└── src/
+    └── main/
+        ├── java/
+        │   │
+        │   ├── com/food/servlet/
+        │   │   ├── RegisterServlet
+        │   │   ├── LoginServlet
+        │   │   ├── ResetPasswordServlet
+        │   │   ├── RestaurantServlet
+        │   │   ├── MenuServlet
+        │   │   ├── CartServlet
+        │   │   ├── OrderServlet
+        │   │   └── AddressServlet
+        │   │
+        │   └── com/tap/
+        │       ├── model/
+        │       ├── DAO/
+        │       ├── DAOImpl/
+        │       └── utility/
+        │           └── DBConnection
+        │
+        └── webapp/
+            ├── *.jsp
+            ├── register.html
+            ├── css/
+            │   └── style.css
+            ├── images/
+            └── WEB-INF/
+                ├── web.xml
+                └── jspf/
 ```
-
-**Architecture.** Requests hit a servlet, which validates input and delegates to
-a DAO interface. The DAO implementation runs the JDBC query and maps rows onto
-model objects, and the servlet then forwards to a JSP for rendering.
-
-Every query that accepts user input goes through a `PreparedStatement` with bound
-placeholders, so no user-supplied value is ever concatenated into SQL. The only
-plain `Statement` uses are the parameterless `getAll*()` methods, whose SQL is a
-fixed string.
-
-Separating `DAO` from `DAOImpl` keeps the persistence mechanism swappable
-without touching controller code.
 
 ---
 
-## How to Run Locally
+## 🗄️ Database
+
+The application uses **MySQL** for persistent data storage.
+
+Main entities include:
+
+* User
+* Restaurant
+* Menu
+* User Address
+* Order
+* Order Item
+
+### Database Relationships
+
+```text
+User
+ │
+ ├──── User Address
+ │
+ └──── Orders
+          │
+          └──── Order Items
+                    │
+                    └──── Menu
+                              │
+                              └──── Restaurant
+```
+
+The database uses:
+
+* Primary keys
+* Foreign keys
+* Constraints
+* Relational mapping
+* Prepared SQL statements
+
+---
+
+## 🔐 Security
+
+User passwords are never stored as plain text.
+
+Passwords are hashed using **BCrypt** before being stored in the database.
+
+User-provided values are passed to SQL queries using `PreparedStatement` rather than directly concatenating input into SQL queries.
+
+Database credentials are also supplied through **environment variables** rather than being hard-coded into the source code.
+
+### Environment Variables
+
+```text
+DB_URL
+DB_USERNAME
+DB_PASSWORD
+```
+
+Example:
+
+```text
+DB_URL=jdbc:mysql://localhost:3306/Tapfood
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+---
+
+## ⚙️ How to Run Locally
 
 ### Prerequisites
 
-- JDK 21 or newer
-- MySQL 8.x running locally
-- Apache Tomcat 10.1.x
-- Maven is **not** required — the included wrapper downloads it automatically
+Make sure you have:
 
-### 1. Clone
+* JDK 21 or newer
+* MySQL 8.x
+* Apache Tomcat 10.1.x
+* Git
+* Eclipse / IntelliJ IDEA / VS Code
 
-```bash
-git clone https://github.com/DeepakMahendiran/tapfood.git
-cd tapfood
-```
-
-### 2. Create the database
-
-See [Database Setup](#database-setup) below.
-
-### 3. Set the environment variables
-
-See [Environment Variables](#environment-variables) below. The application will
-fail to connect if these are not set.
-
-### 4. Build the WAR
-
-On macOS or Linux:
-
-```bash
-./mvnw clean package
-```
-
-On Windows:
-
-```bash
-mvnw.cmd clean package
-```
-
-This produces `target/tapfood.war`.
-
-### 5. Deploy to Tomcat
-
-Copy the WAR into your Tomcat installation and start the server:
-
-```bash
-cp target/tapfood.war $CATALINA_HOME/webapps/
-$CATALINA_HOME/bin/startup.sh
-```
-
-Then open <http://localhost:8080/tapfood/>.
-
-### Running from Eclipse instead
-
-The project also imports directly into Eclipse:
-
-1. **File → Import → Existing Maven Projects**, select the cloned folder.
-2. Right-click the project → **Properties → Targeted Runtimes** → tick your
-   Apache Tomcat 10.1 runtime.
-3. Add the three environment variables under **Run → Run Configurations →**
-   your Tomcat server **→ Environment**.
-4. Right-click the project → **Run As → Run on Server**.
+Maven does not need to be installed separately because the project includes the **Maven Wrapper**.
 
 ---
 
-## Database Setup
+### 1. Clone the Repository
 
-The application expects a MySQL database named `Tapfood` containing six tables:
-`user`, `restaurant`, `menu`, `user_address`, `orderTable` and `orderItem`.
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd tapfood
+```
 
-Create them with the bundled schema file:
+---
+
+### 2. Create the Database
+
+Use the SQL schema provided in:
+
+```text
+database/schema.sql
+```
+
+You can execute it using MySQL:
 
 ```bash
 mysql -u your_username -p < database/schema.sql
 ```
 
-You will be prompted for your MySQL password — it is never stored in this
-repository.
+---
 
-The schema creates the database if it does not already exist, so this single
-command is enough for a fresh setup.
+### 3. Configure Environment Variables
 
-Once the tables exist, add at least one restaurant and a few menu items so the
-listing pages have something to show. Restaurant and menu `imagePath` values
-should match filenames present in `src/main/webapp/images/`.
+Configure:
+
+```text
+DB_URL
+DB_USERNAME
+DB_PASSWORD
+```
+
+These variables must be available to the Tomcat application.
 
 ---
 
-## Environment Variables
+### 4. Build the Project
 
-Database configuration is read from environment variables at runtime, so no
-credentials are committed to source control. `DBConnection.java` reads:
-
-| Variable | Purpose | Example |
-|---|---|---|
-| `DB_URL` | JDBC connection string | `jdbc:mysql://localhost:3306/Tapfood` |
-| `DB_USERNAME` | MySQL user | `your_username` |
-| `DB_PASSWORD` | Password for that user | `your_password` |
-
-A template lives in [`.env.example`](.env.example).
-
-These must be visible to the **Tomcat process**, not just your terminal.
-
-**Eclipse** — Run → Run Configurations → select your Tomcat server →
-**Environment** tab → **New** for each variable.
-
-**Standalone Tomcat on Windows** — create `%CATALINA_HOME%\bin\setenv.bat`:
-
-```bat
-set DB_URL=jdbc:mysql://localhost:3306/Tapfood
-set DB_USERNAME=your_username
-set DB_PASSWORD=your_password
-```
-
-**Standalone Tomcat on macOS or Linux** — create `$CATALINA_HOME/bin/setenv.sh`:
+#### Windows
 
 ```bash
-export DB_URL=jdbc:mysql://localhost:3306/Tapfood
-export DB_USERNAME=your_username
-export DB_PASSWORD=your_password
+mvnw.cmd clean package
 ```
 
-Make it executable with `chmod +x setenv.sh`. Tomcat picks this file up
-automatically on startup.
+#### Linux / macOS
+
+```bash
+./mvnw clean package
+```
+
+The WAR file will be generated inside:
+
+```text
+target/tapfood.war
+```
 
 ---
 
-## Screenshots
+### 5. Deploy to Tomcat
 
-<!-- Add screenshots here. Suggested: save images under docs/screenshots/ and
-     reference them as shown below. -->
+Copy the generated WAR file into:
 
-| Home / Restaurants | Menu |
-|---|---|
-| _coming soon_ | _coming soon_ |
+```text
+Tomcat/webapps/
+```
 
-| Cart | Checkout |
-|---|---|
-| _coming soon_ | _coming soon_ |
+Start Apache Tomcat and open:
 
-| Order History | Profile |
-|---|---|
-| _coming soon_ | _coming soon_ |
+```text
+http://localhost:8080/tapfood/
+```
 
 ---
 
-## Live Demo
+## 💻 Running with Eclipse
 
-_Deployment in progress — the live URL will be added here._
+1. Open Eclipse
+2. Select **File → Import → Existing Maven Projects**
+3. Select the TapFood project
+4. Configure **Apache Tomcat 10.1**
+5. Add the required environment variables
+6. Right-click the project
+7. Select **Run As → Run on Server**
 
 ---
 
-## Repository
+## 🧠 What I Learned
 
-<https://github.com/DeepakMahendiran/tapfood>
+Working on this project helped me strengthen my understanding of Java full-stack development and how different application layers communicate.
+
+### Java Web Development
+
+* Jakarta Servlets
+* JSP
+* Servlet lifecycle
+* Request and response handling
+* Session management
+* Form handling
+
+### Database Development
+
+* JDBC
+* CRUD operations
+* PreparedStatement
+* SQL queries
+* Primary and foreign keys
+* Database relationships
+
+### Software Architecture
+
+* MVC-style architecture
+* DAO pattern
+* Separation of concerns
+* Model classes
+* Interface-based design
+
+### Security
+
+* BCrypt password hashing
+* Session-based authentication
+* Server-side validation
+* Secure database queries
+* Environment-based configuration
+
+### Deployment
+
+* Maven WAR packaging
+* Apache Tomcat deployment
+* Docker
+* Environment variables
+* Database configuration
+* Deployment troubleshooting
 
 ---
 
-## Author
+## 🔄 Complete Application Flow
 
-**Deepak Mahendiran** — [@DeepakMahendiran](https://github.com/DeepakMahendiran)
+A typical restaurant order follows this flow:
+
+```text
+User
+ ↓
+Restaurant Page
+ ↓
+Select Restaurant
+ ↓
+View Menu
+ ↓
+Add Food Item
+ ↓
+Session Cart
+ ↓
+Update Quantity
+ ↓
+Checkout
+ ↓
+Select Address
+ ↓
+Select Payment Mode
+ ↓
+Place Order
+ ↓
+MySQL Database
+ ↓
+Order Confirmation
+ ↓
+Order History
+```
+
+---
+
+## 📸 Screenshots
+
+### Home / Restaurants
+
+*Add application screenshot here.*
+
+### Restaurant Menu
+
+*Add application screenshot here.*
+
+### Shopping Cart
+
+*Add application screenshot here.*
+
+### Checkout
+
+*Add application screenshot here.*
+
+### Order History
+
+*Add application screenshot here.*
+
+### User Profile
+
+*Add application screenshot here.*
+
+---
+
+## 🚀 Future Enhancements
+
+Some features I plan to explore in future versions:
+
+* Spring Boot migration
+* REST API development
+* React frontend
+* JWT authentication
+* Online payment gateway integration
+* Restaurant owner/admin dashboard
+* Order status tracking
+* Food search and filtering
+* Reviews and ratings
+* Docker Compose deployment
+
+---
+
+## 👨‍💻 Developer
+
+**Akil C**
+
+Java Full Stack Developer | Java | Spring Boot | SQL | React
+
+---
+
+## ⭐ Project
+
+If you find the project useful for learning Java web development, feel free to explore the repository and share feedback.
+
+**Built as a hands-on Java Full Stack learning project.**
